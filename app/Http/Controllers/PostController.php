@@ -10,9 +10,16 @@ class PostController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $posts = Post::latest()->paginate(2);
+        $query = Post::latest();
+
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->input('search') . '%');
+        }
+
+        $posts = $query->paginate(2);
+
         return view('posts.index', compact('posts'));
     }
 
@@ -33,7 +40,12 @@ class PostController extends Controller
             'title' => 'required|min:3|max:255',
             'body' => 'required|min:10',
             'status' => 'required|in:draft,published',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('posts', 'public');
+        }
 
         Post::create($validated);
 
@@ -82,5 +94,20 @@ class PostController extends Controller
 
         return redirect()->route('posts.index')
             ->with('success', 'Post berhasil dihapus!');
+    }
+
+    public function trash()
+    {
+        $posts = Post::onlyTrashed()->latest()->paginate(2);
+
+        return view('posts.trash', compact('posts'));
+    }
+
+    public function restore(Post $post)
+    {
+        $post->restore();
+
+        return redirect()->route('posts.index')
+            ->with('success', 'Post berhasil dipulihkan!');
     }
 }

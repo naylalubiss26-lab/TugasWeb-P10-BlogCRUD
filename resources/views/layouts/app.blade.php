@@ -15,6 +15,7 @@
     <nav>
         <a href="{{ route('posts.index') }}">Daftar Post</a>
         <a href="{{ route('posts.create') }}">+ Tulis Post</a>
+        <a href="{{ route('posts.trash') }}">🗑 Trash</a>
     </nav>
     <hr>
 
